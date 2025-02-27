@@ -50,6 +50,7 @@
     "lucide-react": "^0.462.0",
     "next-themes": "^0.3.0",
     "react": "^18.3.1",
+    "react-beautiful-dnd": "^13.1.1",
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.53.0",
@@ -80,5 +81,8 @@
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.0.1",
     "vite": "^5.4.1"
-  }
+  },
+  "trustedDependencies": [
+    "@swc/core"
+  ]
 }

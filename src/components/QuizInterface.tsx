@@ -11,9 +11,13 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/t
 
 interface Question {
   id: string;
+  type: "multiple-choice" | "descriptive" | "true-false" | "matching" | "fill-blank" | "sequence";
   text: string;
-  options: string[];
-  correctAnswer: string;
+  options?: string[];
+  pairs?: Array<{ id: string; term: string; definition: string }>;
+  items?: string[];
+  blanks?: string[];
+  correctAnswer: string | boolean | Record<string, string> | string[];
   difficulty: "beginner" | "intermediate" | "advanced";
   explanation: string;
 }
@@ -30,7 +34,7 @@ export const QuizInterface = ({
   timeLimit = 0 
 }: QuizInterfaceProps) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [answers, setAnswers] = useState<Record<string, string | string[] | Record<string, string>>>({});
   const [timeRemaining, setTimeRemaining] = useState(timeLimit * 60);
   const [isVoiceInputActive, setIsVoiceInputActive] = useState(false);
   
@@ -53,7 +57,7 @@ export const QuizInterface = ({
     return () => clearInterval(timer);
   }, [timeLimit]);
   
-  const handleAnswer = (questionId: string, answer: string) => {
+  const handleAnswer = (questionId: string, answer: string | string[] | Record<string, string>) => {
     setAnswers((prev) => ({
       ...prev,
       [questionId]: answer

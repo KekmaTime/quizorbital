@@ -1,23 +1,35 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
-import { Label } from "./ui/label";
+import { MultipleChoiceQuestion } from "./questions/MultipleChoiceQuestion";
+import { TrueFalseQuestion } from "./questions/TrueFalseQuestion";
+import { FillBlankQuestion } from "./questions/FillBlankQuestion";
+import { SequenceQuestion } from "./questions/SequenceQuestion";
+import { DescriptiveQuestion } from "./questions/DescriptiveQuestion";
 
 interface QuestionProps {
-  question: {
-    id: string;
-    text: string;
-    options: string[];
-  };
-  selectedAnswer?: string;
-  onSelectAnswer: (answer: string) => void;
+  question: Question;
+  selectedAnswer?: string | string[] | Record<string, string>;
+  onSelectAnswer: (answer: string | string[] | Record<string, string>) => void;
 }
 
-export const QuizQuestion = ({ 
-  question, 
-  selectedAnswer, 
-  onSelectAnswer 
-}: QuestionProps) => {
+export const QuizQuestion = ({ question, selectedAnswer, onSelectAnswer }: QuestionProps) => {
+  const renderQuestion = () => {
+    switch (question.type) {
+      case "multiple-choice":
+        return <MultipleChoiceQuestion question={question} selectedAnswer={selectedAnswer as string} onSelectAnswer={onSelectAnswer} />;
+      case "true-false":
+        return <TrueFalseQuestion question={question} selectedAnswer={selectedAnswer as string} onSelectAnswer={onSelectAnswer} />;
+      case "fill-blank":
+        return <FillBlankQuestion question={question} selectedAnswer={selectedAnswer as string[]} onSelectAnswer={onSelectAnswer} />;
+      case "sequence":
+        return <SequenceQuestion question={question} selectedAnswer={selectedAnswer as string[]} onSelectAnswer={onSelectAnswer} />;
+      case "descriptive":
+        return <DescriptiveQuestion question={question} selectedAnswer={selectedAnswer as string} onSelectAnswer={onSelectAnswer} />;
+      default:
+        return <div>Unsupported question type</div>;
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -25,35 +37,8 @@ export const QuizQuestion = ({
       transition={{ duration: 0.3 }}
       className="space-y-6"
     >
-      <h3 className="text-xl font-semibold text-gray-800">
-        {question.text}
-      </h3>
-      
-      <RadioGroup 
-        value={selectedAnswer} 
-        onValueChange={onSelectAnswer}
-        className="space-y-3"
-      >
-        {question.options.map((option, index) => (
-          <div 
-            key={index} 
-            className="flex items-center space-x-2 rounded-lg border p-4 transition-colors hover:bg-purple-50 cursor-pointer"
-            onClick={() => onSelectAnswer(option)}
-          >
-            <RadioGroupItem 
-              value={option} 
-              id={`option-${index}`} 
-              className="text-purple-600"
-            />
-            <Label 
-              htmlFor={`option-${index}`} 
-              className="flex-grow cursor-pointer font-medium"
-            >
-              {option}
-            </Label>
-          </div>
-        ))}
-      </RadioGroup>
+      <h3 className="text-xl font-semibold text-gray-800">{question.text}</h3>
+      {renderQuestion()}
     </motion.div>
   );
 }; 
