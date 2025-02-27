@@ -2,7 +2,8 @@
 import { FileUpload } from "@/components/FileUpload";
 import { QuizPreferences } from "@/components/QuizPreferences";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Brain, Target, Zap } from "lucide-react";
+import { ArrowRight, Brain, Sparkles, Terminal } from "lucide-react";
+import { motion } from "framer-motion";
 import { useState } from "react";
 
 const Index = () => {
@@ -11,59 +12,116 @@ const Index = () => {
 
   if (!showQuiz) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
+      <div className="min-h-screen bg-black text-white overflow-hidden">
         {/* Hero Section */}
-        <div className="container px-4 py-24 mx-auto">
-          <div className="text-center mb-16 animate-fade-in">
-            <p className="text-sm font-medium text-primary mb-2">Welcome to</p>
-            <h1 className="text-6xl font-bold text-gray-900 mb-6 tracking-tight">
-              QUIZ<span className="text-primary">ORBIS</span>
-            </h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
-              Transform your learning experience with AI-powered quizzes that adapt
-              to your unique learning style and help you master any subject.
-            </p>
-            <Button
-              onClick={() => setShowQuiz(true)}
-              size="lg"
-              className="group"
+        <div className="relative">
+          {/* Background gradient */}
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-cyan-500/20 z-0" />
+          <div className="absolute inset-0 backdrop-blur-3xl z-0" />
+
+          <div className="container relative z-10 px-4 pt-32 pb-20 mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="text-center mb-16"
             >
-              Get Started
-              <ArrowRight className="group-hover:translate-x-1 transition-transform" />
-            </Button>
-          </div>
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="inline-flex items-center bg-white/10 rounded-full px-4 py-2 mb-6"
+              >
+                <Sparkles className="w-4 h-4 mr-2 text-purple-400" />
+                <span className="text-sm font-medium">AI-Powered Learning Platform</span>
+              </motion.div>
 
-          {/* Features Grid */}
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            <div className="bg-white/80 backdrop-blur-sm p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow animate-fade-in">
-              <div className="h-12 w-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                <Brain className="text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">AI-Powered Learning</h3>
-              <p className="text-gray-600">
-                Our intelligent system adapts questions based on your performance
-                and learning style.
-              </p>
-            </div>
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="text-6xl md:text-7xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-cyan-400"
+              >
+                Master Any Subject with
+                <br /> AI-Driven Quizzes
+              </motion.h1>
 
-            <div className="bg-white/80 backdrop-blur-sm p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow animate-fade-in [animation-delay:200ms]">
-              <div className="h-12 w-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                <Target className="text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Personalized Focus</h3>
-              <p className="text-gray-600">
-                Get questions tailored to your weak areas and learning objectives.
-              </p>
-            </div>
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="text-xl text-gray-400 max-w-2xl mx-auto mb-8"
+              >
+                Transform your learning experience with personalized quizzes that adapt
+                to your unique style and help you achieve mastery.
+              </motion.p>
 
-            <div className="bg-white/80 backdrop-blur-sm p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow animate-fade-in [animation-delay:400ms]">
-              <div className="h-12 w-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                <Zap className="text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Instant Feedback</h3>
-              <p className="text-gray-600">
-                Receive immediate explanations and track your progress in real-time.
-              </p>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+              >
+                <Button
+                  onClick={() => setShowQuiz(true)}
+                  size="lg"
+                  className="group bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-600 hover:to-cyan-600"
+                >
+                  Get Started
+                  <ArrowRight className="group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </motion.div>
+            </motion.div>
+
+            {/* Features Grid */}
+            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                className="group relative bg-white/5 backdrop-blur-sm p-6 rounded-xl border border-white/10 hover:border-white/20 transition-all"
+              >
+                <div className="h-12 w-12 bg-purple-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <Brain className="text-purple-400" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">AI-Powered Learning</h3>
+                <p className="text-gray-400">
+                  Our intelligent system adapts questions based on your performance
+                  and learning patterns.
+                </p>
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl" />
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 }}
+                className="group relative bg-white/5 backdrop-blur-sm p-6 rounded-xl border border-white/10 hover:border-white/20 transition-all"
+              >
+                <div className="h-12 w-12 bg-cyan-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <Terminal className="text-cyan-400" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Smart Analysis</h3>
+                <p className="text-gray-400">
+                  Get detailed insights into your learning progress and areas for improvement.
+                </p>
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl" />
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8 }}
+                className="group relative bg-white/5 backdrop-blur-sm p-6 rounded-xl border border-white/10 hover:border-white/20 transition-all"
+              >
+                <div className="h-12 w-12 bg-purple-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <Sparkles className="text-purple-400" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Instant Feedback</h3>
+                <p className="text-gray-400">
+                  Receive immediate explanations and track your progress in real-time.
+                </p>
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl" />
+              </motion.div>
             </div>
           </div>
         </div>
