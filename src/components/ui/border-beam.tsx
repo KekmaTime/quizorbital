@@ -1,8 +1,8 @@
 
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
+import { motion, HTMLMotionProps } from "framer-motion";
 
-interface BorderBeamProps extends React.HTMLAttributes<HTMLDivElement> {
+interface BorderBeamProps extends Omit<HTMLMotionProps<"div">, "ref"> {
   children: React.ReactNode;
 }
 
