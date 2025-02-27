@@ -1,124 +1,31 @@
+import React, { useState } from "react";
 import { FileUpload } from "@/components/FileUpload";
 import { QuizPreferences } from "@/components/QuizPreferences";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Brain, Sparkles, Terminal, Zap } from "lucide-react";
-import { motion } from "framer-motion";
-import { useState } from "react";
-import { SectionBadge } from "@/components/ui/section-badge";
-import { BorderBeam } from "@/components/ui/border-beam";
-import { LampContainer } from "@/components/ui/lamp-container";
+import { Hero } from "@/components/landing/Hero";
+import { Features } from "@/components/landing/Features";
+import { HowItWorks } from "@/components/landing/HowItWorks";
+import { Testimonials } from "@/components/landing/Testimonials";
+import { CallToAction } from "@/components/landing/CallToAction";
+import { Footer } from "@/components/landing/Footer";
 
 const Index = () => {
   const [showQuiz, setShowQuiz] = useState(false);
   const [step, setStep] = useState(1);
 
+  const handleGetStarted = () => {
+    setShowQuiz(true);
+  };
+
   if (!showQuiz) {
     return (
       <div className="min-h-screen bg-black text-white overflow-hidden">
-        <LampContainer className="pt-32 pb-20">
-          <div className="container relative z-10 px-4 mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="text-center mb-16"
-            >
-              <SectionBadge className="mb-6">
-                <Sparkles className="w-4 h-4 mr-2 text-purple-400" />
-                <span className="text-sm font-medium">AI-Powered Learning Platform</span>
-              </SectionBadge>
-
-              <motion.h1
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="text-6xl md:text-7xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-cyan-400"
-              >
-                Master Any Subject with
-                <br /> AI-Driven Quizzes
-              </motion.h1>
-
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                className="text-xl text-gray-400 max-w-2xl mx-auto mb-8"
-              >
-                Transform your learning experience with personalized quizzes that adapt
-                to your unique style and help you achieve mastery.
-              </motion.p>
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-              >
-                <Button
-                  onClick={() => setShowQuiz(true)}
-                  size="lg"
-                  className="group bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-600 hover:to-cyan-600"
-                >
-                  Get Started
-                  <ArrowRight className="group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </motion.div>
-            </motion.div>
-
-            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-              <BorderBeam>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6 }}
-                  className="group p-6"
-                >
-                  <div className="h-12 w-12 bg-purple-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                    <Brain className="text-purple-400" />
-                  </div>
-                  <h3 className="text-xl font-semibold mb-2">AI-Powered Learning</h3>
-                  <p className="text-gray-400">
-                    Our intelligent system adapts questions based on your performance
-                    and learning patterns.
-                  </p>
-                </motion.div>
-              </BorderBeam>
-
-              <BorderBeam>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.7 }}
-                  className="group p-6"
-                >
-                  <div className="h-12 w-12 bg-cyan-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                    <Terminal className="text-cyan-400" />
-                  </div>
-                  <h3 className="text-xl font-semibold mb-2">Smart Analysis</h3>
-                  <p className="text-gray-400">
-                    Get detailed insights into your learning progress and areas for improvement.
-                  </p>
-                </motion.div>
-              </BorderBeam>
-
-              <BorderBeam>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.8 }}
-                  className="group p-6"
-                >
-                  <div className="h-12 w-12 bg-purple-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                    <Zap className="text-purple-400" />
-                  </div>
-                  <h3 className="text-xl font-semibold mb-2">Instant Feedback</h3>
-                  <p className="text-gray-400">
-                    Receive immediate explanations and track your progress in real-time.
-                  </p>
-                </motion.div>
-              </BorderBeam>
-            </div>
-          </div>
-        </LampContainer>
+        <Hero onGetStarted={handleGetStarted} />
+        <Features />
+        <HowItWorks />
+        <Testimonials />
+        <CallToAction onGetStarted={handleGetStarted} />
+        <Footer />
       </div>
     );
   }

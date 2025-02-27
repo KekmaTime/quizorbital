@@ -1,24 +1,21 @@
-
+import React from "react";
 import { cn } from "@/lib/utils";
-import { motion, HTMLMotionProps } from "framer-motion";
 
-interface BorderBeamProps extends Omit<HTMLMotionProps<"div">, "ref"> {
+interface BorderBeamProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
 }
 
 export const BorderBeam = ({ children, className, ...props }: BorderBeamProps) => {
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
+    <div
       className={cn(
-        "relative rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm",
-        "before:absolute before:inset-0 before:rounded-xl before:bg-gradient-to-r before:from-purple-500/10 before:to-cyan-500/10 before:opacity-0 before:transition-opacity hover:before:opacity-100",
+        "group relative rounded-xl border border-gray-800 bg-black p-1 transition-all hover:border-purple-400/50",
         className
       )}
       {...props}
     >
-      {children}
-    </motion.div>
+      <div className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-purple-500 to-cyan-500 opacity-0 blur transition-all group-hover:opacity-30" />
+      <div className="relative rounded-lg bg-black">{children}</div>
+    </div>
   );
 };
