@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { FileUpload } from "@/components/FileUpload";
 import { QuizPreferences } from "@/components/QuizPreferences";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,8 @@ import { Testimonials } from "@/components/landing/Testimonials";
 import { CallToAction } from "@/components/landing/CallToAction";
 import { Footer } from "@/components/landing/Footer";
 import { QuizInterface } from "@/components/QuizInterface";
+import { Navigation } from "@/components/landing/Navigation";
+import { useAuth } from "@/contexts/AuthContext";
 
 const sampleQuestions = [
   {
@@ -96,14 +99,21 @@ const sampleQuestions = [
 const Index = () => {
   const [showQuiz, setShowQuiz] = useState(false);
   const [step, setStep] = useState(1);
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
 
   const handleGetStarted = () => {
-    setShowQuiz(true);
+    if (user) {
+      setShowQuiz(true);
+    } else {
+      navigate("/signin");
+    }
   };
 
   if (!showQuiz) {
     return (
       <div className="min-h-screen bg-black text-white overflow-hidden">
+        <Navigation />
         <Hero onGetStarted={handleGetStarted} />
         <Features />
         <HowItWorks />
@@ -116,7 +126,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
-      <div className="container px-4 py-16 mx-auto">
+      <Navigation />
+      <div className="container px-4 py-16 mx-auto pt-24">
         <div className="text-center mb-12">
           <p className="text-sm font-medium text-primary mb-2">Welcome to</p>
           <h1 className="text-4xl font-bold text-gray-900 mb-4 tracking-tight">
@@ -174,6 +185,7 @@ const Index = () => {
           )}
         </div>
       </div>
+      <Footer />
     </div>
   );
 };
