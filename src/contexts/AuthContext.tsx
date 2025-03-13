@@ -59,11 +59,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signUp = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signUp({ email, password });
+      const { error } = await supabase.auth.signUp({ 
+        email, 
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`
+        }
+      });
+      
       if (error) throw error;
+      
       toast({
         title: "Account created!",
-        description: "Please check your email for a confirmation link.",
+        description: "Please check your email (including spam folder) for a confirmation link. Note: Emails may be delayed due to rate limits.",
       });
     } catch (error: any) {
       toast({
