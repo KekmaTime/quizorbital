@@ -3,33 +3,16 @@ import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { SectionBadge } from "@/components/ui/section-badge";
 import { Footer } from "@/components/landing/Footer";
-import { ArrowRight, Mail, Lock, Loader2, Github } from "lucide-react";
+import { Lock, Loader2 } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 
 const SignIn = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn, signInWithGoogle } = useAuth();
+  const { signInWithGoogle } = useAuth();
   const navigate = useNavigate();
-
-  const handleSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    try {
-      await signIn(email, password);
-      navigate("/");
-    } catch (error) {
-      console.error("Error signing in:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
@@ -71,87 +54,29 @@ const SignIn = () => {
             <CardHeader>
               <CardTitle>Sign In</CardTitle>
               <CardDescription className="text-gray-400">
-                Enter your credentials to access your account
+                Access your account
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSignIn} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="you@example.com"
-                      className="pl-10 bg-gray-800 border-gray-700"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <Label htmlFor="password">Password</Label>
-                    <Link to="/forgot-password" className="text-sm text-purple-400 hover:text-purple-300">
-                      Forgot password?
-                    </Link>
-                  </div>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="password"
-                      type="password"
-                      placeholder="••••••••"
-                      className="pl-10 bg-gray-800 border-gray-700"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-end">
-                  <Link to="/forgot-password" className="text-sm text-purple-400 hover:text-purple-300">
-                    Forgot password?
-                  </Link>
-                </div>
-                <Button 
-                  type="submit" 
-                  className="w-full bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-600 hover:to-cyan-600"
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <>
-                      Sign In
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </>
-                  )}
-                </Button>
-              </form>
-
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-700"></div>
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-gray-900 px-2 text-gray-400">Or continue with</span>
-                </div>
+            <CardContent className="space-y-6">
+              <div className="text-center mb-4">
+                <p className="text-gray-400">
+                  Sign in with your Google account for the fastest and most secure experience.
+                </p>
               </div>
-
-              <div className="grid grid-cols-1 gap-3">
-                <Button 
-                  variant="outline" 
-                  className="bg-gray-800 border-gray-700 hover:bg-gray-700"
-                  onClick={handleGoogleSignIn}
-                  disabled={isLoading}
-                >
+              
+              <Button 
+                variant="outline" 
+                className="w-full bg-gray-800 border-gray-700 hover:bg-gray-700 py-6"
+                onClick={handleGoogleSignIn}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                ) : (
                   <FcGoogle className="mr-2 h-5 w-5" />
-                  Google
-                </Button>
-              </div>
+                )}
+                Continue with Google
+              </Button>
             </CardContent>
             <CardFooter className="flex justify-center">
               <p className="text-sm text-gray-400">
