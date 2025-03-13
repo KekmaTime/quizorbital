@@ -8,15 +8,25 @@ const AuthCallback = () => {
 
   useEffect(() => {
     const handleAuthCallback = async () => {
-      // Get the URL hash and handle the OAuth callback
-      const { error } = await supabase.auth.getSession();
-      
-      if (error) {
-        console.error("Error during auth callback:", error);
+      try {
+        // Exchange the auth code for a session
+        const { data: { session }, error } = await supabase.auth.exchangeCodeForSession(
+          window.location.hash
+        );
+        
+        if (error) {
+          console.error("Error during auth callback:", error);
+          navigate("/signin?error=Authentication%20failed");
+          return;
+        }
+
+        if (session) {
+          // Successfully authenticated
+          navigate("/");
+        }
+      } catch (error) {
+        console.error("Error in auth callback:", error);
         navigate("/signin?error=Authentication%20failed");
-      } else {
-        // Redirect to the home page or dashboard after successful authentication
-        navigate("/");
       }
     };
 
