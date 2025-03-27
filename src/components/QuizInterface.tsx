@@ -5,9 +5,10 @@ import { QuizProgress } from "./QuizProgress";
 import { VoiceInput } from "./VoiceInput";
 import { DifficultyIndicator } from "./DifficultyIndicator";
 import { Button } from "./ui/button";
-import { ArrowRight, Mic, HelpCircle } from "lucide-react";
+import { ArrowRight, Mic, HelpCircle, Clock, MicOff } from "lucide-react";
 import { Card, CardContent } from "./ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
+import { Progress } from "./ui/progress";
 
 interface Question {
   id: string;
@@ -23,9 +24,9 @@ interface Question {
 }
 
 interface QuizInterfaceProps {
-  questions: Question[];
+  questions: any[];
   onComplete: (results: any) => void;
-  timeLimit?: number; // in minutes
+  timeLimit?: number;
 }
 
 export const QuizInterface = ({ 
@@ -34,9 +35,14 @@ export const QuizInterface = ({
   timeLimit = 0 
 }: QuizInterfaceProps) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string | string[] | Record<string, string>>>({});
+  const [answers, setAnswers] = useState<Record<string, any>>({});
   const [timeRemaining, setTimeRemaining] = useState(timeLimit * 60);
   const [isVoiceInputActive, setIsVoiceInputActive] = useState(false);
+  
+  // Log questions for debugging
+  useEffect(() => {
+    console.log("Questions received:", questions);
+  }, [questions]);
   
   const currentQuestion = questions[currentQuestionIndex];
   
@@ -57,7 +63,8 @@ export const QuizInterface = ({
     return () => clearInterval(timer);
   }, [timeLimit]);
   
-  const handleAnswer = (questionId: string, answer: string | string[] | Record<string, string>) => {
+  const handleAnswer = (questionId: string, answer: any) => {
+    console.log(`Saving answer for question ${questionId}:`, answer);
     setAnswers((prev) => ({
       ...prev,
       [questionId]: answer
@@ -72,25 +79,19 @@ export const QuizInterface = ({
     }
   };
   
+  const handlePrevious = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex((prev) => prev - 1);
+    }
+  };
+  
   const handleQuizComplete = () => {
     // Calculate results
     const results = {
       answers,
-      score: calculateScore(),
       timeSpent: timeLimit * 60 - timeRemaining,
     };
     onComplete(results);
-  };
-  
-  const calculateScore = () => {
-    let correct = 0;
-    Object.entries(answers).forEach(([questionId, answer]) => {
-      const question = questions.find(q => q.id === questionId);
-      if (question && question.correctAnswer === answer) {
-        correct++;
-      }
-    });
-    return (correct / questions.length) * 100;
   };
   
   const formatTime = (seconds: number) => {
@@ -99,108 +100,102 @@ export const QuizInterface = ({
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
   
-  const handleVoiceInput = (text: string) => {
-    // Simple algorithm to match voice input to an option
-    const options = currentQuestion.options;
-    const bestMatch = options.reduce((best, current) => {
-      const currentSimilarity = calculateSimilarity(text.toLowerCase(), current.toLowerCase());
-      const bestSimilarity = calculateSimilarity(text.toLowerCase(), best.toLowerCase());
-      return currentSimilarity > bestSimilarity ? current : best;
-    }, options[0]);
-    
-    handleAnswer(currentQuestion.id, bestMatch);
-    setIsVoiceInputActive(false);
-  };
+  // Handle empty questions array
+  if (!questions || questions.length === 0) {
+    return (
+      <div className="text-center p-8">
+        <p>No questions available for this quiz.</p>
+      </div>
+    );
+  }
   
-  // Simple string similarity function
-  const calculateSimilarity = (str1: string, str2: string) => {
-    const words1 = str1.split(' ');
-    const words2 = str2.split(' ');
-    const commonWords = words1.filter(word => words2.includes(word));
-    return commonWords.length / Math.max(words1.length, words2.length);
-  };
-  
+  // Ensure currentQuestion exists
+  if (!currentQuestion) {
+    return (
+      <div className="text-center p-8">
+        <p>Error loading question data.</p>
+      </div>
+    );
+  }
+
   return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="w-full max-w-4xl mx-auto p-4"
-    >
-      <div className="flex justify-between items-center mb-6">
-        <QuizProgress 
-          current={currentQuestionIndex + 1} 
-          total={questions.length} 
-        />
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div className="text-sm font-medium">
+          Question {currentQuestionIndex + 1} of {questions.length}
+        </div>
         
         {timeLimit > 0 && (
-          <div className="text-lg font-medium">
-            Time: {formatTime(timeRemaining)}
+          <div className="flex items-center text-sm font-medium">
+            <Clock className="mr-1 h-4 w-4" />
+            {formatTime(timeRemaining)}
           </div>
         )}
       </div>
       
-      <Card className="mb-8 bg-white/90 backdrop-blur-sm shadow-lg border-purple-100">
-        <CardContent className="p-6">
-          <div className="flex justify-between items-center mb-4">
-            <DifficultyIndicator difficulty={currentQuestion.difficulty} />
-            
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    onClick={() => setIsVoiceInputActive(true)}
-                    className="text-purple-500 hover:text-purple-700 hover:bg-purple-50"
-                  >
-                    <Mic className="h-5 w-5" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Answer with voice</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-          
+      <Progress 
+        value={(currentQuestionIndex + 1) / questions.length * 100} 
+        className="h-2"
+      />
+      
+      <Card className="p-6">
+        <CardContent className="p-0">
           <QuizQuestion
             question={currentQuestion}
             selectedAnswer={answers[currentQuestion.id]}
             onSelectAnswer={(answer) => handleAnswer(currentQuestion.id, answer)}
           />
           
-          <div className="mt-8 flex justify-between items-center">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="outline" size="icon">
-                    <HelpCircle className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Hint: Focus on key concepts in the question</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            
-            <Button 
-              onClick={handleNext}
-              disabled={!answers[currentQuestion.id]}
-              className="bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-600 hover:to-cyan-600 group"
-            >
-              {currentQuestionIndex < questions.length - 1 ? "Next" : "Finish"}
-              <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-            </Button>
-          </div>
+          {isVoiceInputActive && (
+            <div className="mt-4 p-3 bg-purple-50 rounded-md flex items-center">
+              <Mic className="h-5 w-5 text-purple-500 animate-pulse mr-2" />
+              <span className="text-sm">Listening... Speak your answer clearly.</span>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setIsVoiceInputActive(false)}
+                className="ml-auto"
+              >
+                <MicOff className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
       
-      {isVoiceInputActive && (
-        <VoiceInput 
-          onResult={handleVoiceInput}
-          onCancel={() => setIsVoiceInputActive(false)}
-        />
-      )}
-    </motion.div>
+      <div className="flex justify-between">
+        <Button
+          variant="outline"
+          onClick={handlePrevious}
+          disabled={currentQuestionIndex === 0}
+        >
+          Previous
+        </Button>
+        
+        <div className="flex gap-2">
+          {!isVoiceInputActive && (
+            <Button
+              variant="outline"
+              onClick={() => setIsVoiceInputActive(true)}
+              className="flex items-center"
+            >
+              <Mic className="mr-2 h-4 w-4" />
+              Voice Input
+            </Button>
+          )}
+          
+          {currentQuestionIndex < questions.length - 1 ? (
+            <Button onClick={handleNext}>Next</Button>
+          ) : (
+            <Button 
+              onClick={handleQuizComplete}
+              className="bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-600 hover:to-cyan-600"
+            >
+              Finish Quiz
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }; 

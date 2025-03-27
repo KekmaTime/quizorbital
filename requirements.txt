@@ -1,0 +1,31 @@
+# Flask and web server
+flask
+flask-cors
+gunicorn
+python-dotenv
+werkzeug
+
+# Database
+psycopg2-binary
+chromadb
+sentence-transformers
+
+# PDF processing
+PyPDF2
+pdfminer.six
+
+# NLP and ML
+numpy
+scikit-learn
+nltk
+spacy
+
+# OpenAI integration
+openai
+
+# Authentication
+PyJWT
+bcrypt
+
+# Utilities
+python-slugify

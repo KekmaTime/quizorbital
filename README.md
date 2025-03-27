@@ -1,69 +1,76 @@
-# Welcome to your Lovable project
+# Project Overview
+QUIZORBIS is an AI-powered adaptive learning platform that creates personalized quizzes from learning materials and adapts questions based on user performance.
 
-## Project info
+## Project Status
 
-**URL**: https://lovable.dev/projects/2602cf01-f508-4002-91b5-50d4c9b9436d
+### Phase 1: Frontend Implementation ✅
+- [x] Landing page components (Hero, Features, How It Works, Testimonials, Call to Action)
+- [x] Basic UI components using shadcn-ui and Tailwind CSS
+- [x] Quiz interface with question display and navigation
+- [x] File upload component for PDFs
+- [x] Quiz preferences selection component
+- [x] Quiz results display with analytics visualization
+- [x] Responsive design for all screen sizes
+- [x] Animation and transitions using Framer Motion
 
-## How can I edit this code?
+### Phase 2: Frontend Functionality ✅
+- [x] Sample questions implementation
+- [x] Quiz progress tracking
+- [x] Timer functionality for quizzes
+- [x] Voice input UI component
+- [x] Basic quiz scoring logic
+- [x] User flow from landing page to quiz creation
+- [x] Difficulty indicators for questions
+- [x] Tooltips and help functionality
 
-There are several ways of editing your application.
+### Phase 3: Backend Development ✅
+- [x] Set up Flask server with necessary endpoints
+- [x] Implement PDF text extraction using PyPDF2
+- [x] Create NLP pipeline for text processing
+- [x] Implement OpenAI integration for question generation
+- [x] Set up authentication system
+- [x] Create API endpoints for:
+  - [x] User management
+  - [x] File upload and processing
+  - [x] Quiz generation
+  - [x] Results storage and retrieval
 
-**Use Lovable**
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/2602cf01-f508-4002-91b5-50d4c9b9436d) and start prompting.
+### Phase 4: Database Implementation 🔄
+- [x] Configure PostgreSQL for user data and quiz history (using NeonDB)
+- [x] Set up ChromaDB for vector embeddings storage
+- [x] Create data models for:
+  - [x] Users
+  - [x] Quizzes
+  - [x] Questions
+  - [x] Performance metrics
+- [x] Implement data persistence and retrieval logic
 
-Changes made via Lovable will be committed automatically to this repo.
+### Phase 5: AI/ML Components 🔄
+- [ ] Develop adaptive algorithm for question difficulty adjustment
+- [ ] Implement user proficiency prediction models using PyTorch
+- [ ] Create embedding generation for uploaded content
+- [ ] Develop similarity matching for voice input responses
+- [ ] Implement cold-start problem solution for new users
+- [ ] Create personalized recommendation system
 
-**Use your preferred IDE**
+### Phase 6: Integration 🔄
+- [ ] Connect React frontend with Flask backend
+- [ ] Implement real-time data fetching and updates
+- [ ] Set up authentication flow
+- [ ] Integrate file processing with quiz generation
+- [ ] Connect analytics dashboard with backend data
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Phase 7: Testing and Refinement 🔄
+- [ ] Implement unit tests for frontend components
+- [ ] Create integration tests for end-to-end flows
+- [ ] Perform user testing and gather feedback
+- [ ] Optimize AI models based on performance
+- [ ] Improve UI/UX based on user feedback
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with .
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/2602cf01-f508-4002-91b5-50d4c9b9436d) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+### Phase 8: Deployment and Scaling 🔄
+- [ ] Set up CI/CD pipeline
+- [ ] Configure cloud infrastructure (AWS/GCP/Azure)
+- [ ] Implement load balancing for handling high traffic
+- [ ] Set up monitoring and logging
+- [ ] Optimize for performance and scalability

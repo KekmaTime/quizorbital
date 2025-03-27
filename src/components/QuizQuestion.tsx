@@ -13,20 +13,59 @@ interface QuestionProps {
 }
 
 export const QuizQuestion = ({ question, selectedAnswer, onSelectAnswer }: QuestionProps) => {
+  // For debugging
+  console.log("QuizQuestion rendering:", { questionType: question.type, question, selectedAnswer });
+  
+  // Parse options if they're stored as a JSON string
+  const getOptions = () => {
+    if (!question.options) return [];
+    
+    // If options is a string (JSON array from database), parse it
+    if (typeof question.options === 'string') {
+      try {
+        return JSON.parse(question.options);
+      } catch (e) {
+        console.error("Failed to parse options:", e);
+        return [];
+      }
+    }
+    
+    // If already an array, return as is
+    return question.options;
+  };
+  
+  // Create a normalized question object with properly formatted data
+  const normalizedQuestion = {
+    ...question,
+    options: getOptions()
+  };
+  
   const renderQuestion = () => {
+    // Check if this is a multiple choice question with options
+    if (question.type === "multiple-choice" || 
+        (normalizedQuestion.options && normalizedQuestion.options.length > 0)) {
+      return (
+        <MultipleChoiceQuestion 
+          question={normalizedQuestion} 
+          selectedAnswer={selectedAnswer as string} 
+          onSelectAnswer={onSelectAnswer} 
+        />
+      );
+    }
+    
     switch (question.type) {
-      case "multiple-choice":
-        return <MultipleChoiceQuestion question={question} selectedAnswer={selectedAnswer as string} onSelectAnswer={onSelectAnswer} />;
       case "true-false":
         return <TrueFalseQuestion question={question} selectedAnswer={selectedAnswer as string} onSelectAnswer={onSelectAnswer} />;
       case "fill-blank":
-        return <FillBlankQuestion question={question} selectedAnswer={selectedAnswer as string[]} onSelectAnswer={onSelectAnswer} />;
+        return <FillBlankQuestion question={question} selectedAnswer={selectedAnswer as string | string[]} onSelectAnswer={onSelectAnswer} />;
       case "sequence":
         return <SequenceQuestion question={question} selectedAnswer={selectedAnswer as string[]} onSelectAnswer={onSelectAnswer} />;
       case "descriptive":
         return <DescriptiveQuestion question={question} selectedAnswer={selectedAnswer as string} onSelectAnswer={onSelectAnswer} />;
       default:
-        return <div>Unsupported question type</div>;
+        // Fallback to descriptive for unknown types
+        console.warn(`Unknown question type: ${question.type}, falling back to descriptive`);
+        return <DescriptiveQuestion question={question} selectedAnswer={selectedAnswer as string} onSelectAnswer={onSelectAnswer} />;
     }
   };
 
