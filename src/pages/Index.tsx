@@ -1,5 +1,8 @@
-import { FileUpload } from "@/components/FileUpload";
+import FileUpload from "@/components/FileUpload";
 import { QuizPreferences } from "@/components/QuizPreferences";
+import { Quiz } from "@/components/Quiz";
+import { QuizResults } from "@/components/QuizResults";
+import { PreAssessment } from "@/components/PreAssessment";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Brain, Sparkles, Terminal, Zap } from "lucide-react";
 import { motion } from "framer-motion";
@@ -7,11 +10,29 @@ import { useState } from "react";
 import { SectionBadge } from "@/components/ui/section-badge";
 import { BorderBeam } from "@/components/ui/border-beam";
 import { LampContainer } from "@/components/ui/lamp-container";
+import { useQuiz } from "@/lib/QuizContext";
+import { Spinner } from "@/components/ui/spinner";
+import { QuizPhase } from "@/lib/types";
 
 const Index = () => {
   const [showQuiz, setShowQuiz] = useState(false);
-  const [step, setStep] = useState(1);
+  const { state, startQuiz, setPhase, resetQuiz, setPreAssessmentResults } = useQuiz();
+  const { phase, isLoading, questions, userAnswers, preAssessmentResults } = state;
 
+  // Handle starting the quiz
+  const handleStartQuiz = async () => {
+    if (phase === QuizPhase.Setup) {
+      setPhase(QuizPhase.PreAssessment);
+    }
+  };
+
+  // Handle starting the actual quiz after pre-assessment
+  const handleStartAfterPreAssessment = async () => {
+    // Start the quiz using the context
+    startQuiz();
+  };
+
+  // Landing page
   if (!showQuiz) {
     return (
       <div className="min-h-screen bg-black text-white overflow-hidden">
@@ -138,47 +159,65 @@ const Index = () => {
         </div>
 
         <div className="max-w-4xl mx-auto">
-          {step === 1 && (
+          {/* Step 1: Upload study material */}
+          {phase === QuizPhase.Setup && (
             <div className="space-y-8 animate-fade-in">
               <FileUpload />
+              {state.studyMaterial && <QuizPreferences />}
               <div className="text-center">
                 <Button
-                  onClick={() => setStep(2)}
+                  onClick={() => setPhase(QuizPhase.PreAssessment)}
                   className="bg-primary hover:bg-primary/90 text-white"
+                  disabled={!state.studyMaterial}
                 >
-                  Next: Set Preferences
+                  Next: Take Pre-Assessment
                 </Button>
               </div>
             </div>
           )}
 
-          {step === 2 && (
-            <div className="space-y-8 animate-fade-in">
-              <QuizPreferences />
-              <div className="text-center space-x-4">
-                <Button variant="outline" onClick={() => setStep(1)}>
-                  Back
-                </Button>
-                <Button
-                  onClick={() => setStep(3)}
-                  className="bg-primary hover:bg-primary/90 text-white"
-                >
-                  Start Quiz
-                </Button>
-              </div>
-            </div>
+          {/* Pre-assessment */}
+          {phase === QuizPhase.PreAssessment && !preAssessmentResults && (
+            <PreAssessment />
           )}
 
-          {step === 3 && (
+          {/* Start quiz after pre-assessment */}
+          {phase === QuizPhase.PreAssessment && preAssessmentResults && !isLoading && (
             <div className="text-center py-12 animate-fade-in">
-              <h2 className="text-2xl font-semibold mb-4">Quiz Ready!</h2>
+              <h2 className="text-2xl font-semibold mb-4">Ready to Start the Quiz</h2>
               <p className="text-gray-600 mb-8">
-                Your personalized quiz is being generated. Get ready to begin!
+                Based on your pre-assessment, we've set your difficulty level to <strong className="text-primary">{preAssessmentResults.recommendedDifficulty}</strong>.
               </p>
-              <Button variant="outline" onClick={() => setStep(1)}>
-                Start Over
+              <Button
+                onClick={handleStartAfterPreAssessment}
+                className="bg-primary hover:bg-primary/90 text-white"
+              >
+                Start Quiz
               </Button>
             </div>
+          )}
+
+          {/* Generating quiz */}
+          {isLoading && (
+            <div className="text-center py-12 animate-fade-in">
+              <h2 className="text-2xl font-semibold mb-4">Generating Your Quiz</h2>
+              <div className="flex justify-center mb-8">
+                <Spinner className="h-10 w-10 text-primary" />
+              </div>
+              <p className="text-gray-600">
+                Our AI is analyzing your study material and creating personalized questions...
+              </p>
+            </div>
+          )}
+
+          {/* Quiz in progress */}
+          {phase === QuizPhase.Quiz && !isLoading && questions.length > 0 && (
+            <Quiz />
+          )}
+
+          {/* Quiz results */}
+          {phase === QuizPhase.Results && (
+            <QuizResults />
           )}
         </div>
       </div>

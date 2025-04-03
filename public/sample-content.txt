@@ -1,0 +1,145 @@
+# Introduction to React
+
+React is a JavaScript library for building user interfaces, particularly single-page applications. It's used for handling the view layer in web and mobile apps. React allows developers to create reusable UI components.
+
+## Core Concepts
+
+### Components
+
+Components are the building blocks of React applications. They are independent, reusable pieces of code that return HTML via a render function. Components come in two types:
+
+1. **Function Components** - These are JavaScript functions that accept props and return React elements.
+2. **Class Components** - These are ES6 classes that extend React.Component and have a render method.
+
+### JSX
+
+JSX stands for JavaScript XML. It allows us to write HTML in React. JSX produces React "elements" which are then rendered to the DOM.
+
+Example:
+```jsx
+const element = <h1>Hello, world!</h1>;
+```
+
+### Props
+
+Props (properties) are read-only components that must be kept pure, i.e., they must never be modified. They are passed from parent components to child components.
+
+### State
+
+State is a JavaScript object that contains data that may change over time. Unlike props, state is managed within the component. State changes trigger re-renders.
+
+```jsx
+// Class component with state
+class Counter extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { count: 0 };
+  }
+  
+  render() {
+    return (
+      <div>
+        <p>Count: {this.state.count}</p>
+        <button onClick={() => this.setState({ count: this.state.count + 1 })}>
+          Increment
+        </button>
+      </div>
+    );
+  }
+}
+```
+
+```jsx
+// Function component with useState hook
+function Counter() {
+  const [count, setCount] = useState(0);
+  
+  return (
+    <div>
+      <p>Count: {count}</p>
+      <button onClick={() => setCount(count + 1)}>
+        Increment
+      </button>
+    </div>
+  );
+}
+```
+
+### Lifecycle Methods
+
+React components have lifecycle methods that allow you to run code at specific points in a component's life. For example:
+
+- **componentDidMount()** - Runs after the component is rendered
+- **componentDidUpdate()** - Runs after the component updates
+- **componentWillUnmount()** - Runs before the component is removed
+
+With hooks, we can use useEffect to handle lifecycle events in function components.
+
+```jsx
+useEffect(() => {
+  // componentDidMount code
+  return () => {
+    // componentWillUnmount code
+  };
+}, []); // Empty dependency array means run once after mount
+```
+
+### Hooks
+
+Hooks are functions that let you "hook into" React state and lifecycle features from function components. Some common hooks include:
+
+- **useState** - Adds state to function components
+- **useEffect** - Performs side effects in function components
+- **useContext** - Subscribes to React context
+- **useReducer** - Manages more complex state logic
+- **useRef** - Accesses DOM elements directly
+
+## Virtual DOM
+
+React uses a Virtual DOM, which is a lightweight copy of the actual DOM. When state changes in a component, React creates a new Virtual DOM and compares it with the previous one. It then updates only the parts of the actual DOM that have changed, which makes React very efficient.
+
+## Setting Up a React Project
+
+You can create a new React application using Create React App:
+
+```bash
+npx create-react-app my-app
+cd my-app
+npm start
+```
+
+Or using Vite:
+
+```bash
+npm create vite@latest my-app -- --template react
+cd my-app
+npm install
+npm run dev
+```
+
+## Key Benefits of React
+
+1. **Component-Based Architecture** - Build encapsulated components that manage their own state.
+2. **Declarative UI** - Tell React what you want the UI to look like, and React updates the DOM to match.
+3. **Virtual DOM** - Efficiently updates the DOM for optimal performance.
+4. **Unidirectional Data Flow** - Data flows down from parent to child components.
+5. **Large Ecosystem** - React has a vast ecosystem of libraries, tools, and extensions.
+
+## React Router
+
+React Router is a standard library for routing in React. It enables navigation among views in a React application, allows browsers to change the URL, and keeps the UI in sync with the URL.
+
+```jsx
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+      </Routes>
+    </BrowserRouter>
+  );
+} 
