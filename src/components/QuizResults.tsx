@@ -4,6 +4,7 @@ import { Button } from "./ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Progress } from "./ui/progress";
 import { callOpenAI } from "@/lib/openai";
+import { analyzeQuizWithAssistant } from "@/lib/assistantsApi";
 import { QuizResult } from "@/lib/types";
 import {
   Award,
@@ -13,15 +14,17 @@ import {
   Clock,
   Star,
   XCircle,
-  Brain
+  Brain,
+  Bot
 } from "lucide-react";
 
 export const QuizResults = () => {
   const { state, resetQuiz, setQuizResult } = useQuiz();
-  const { userAnswers, questions } = state;
+  const { userAnswers, questions, totalQuizTime } = state;
 
   const [result, setResult] = useState<QuizResult | null>(null);
   const [loading, setLoading] = useState(true);
+  const [useAssistantApi, setUseAssistantApi] = useState(true);
 
   useEffect(() => {
     const analyzeResults = async () => {
@@ -34,18 +37,51 @@ export const QuizResults = () => {
           return;
         }
 
-        // Analyze with OpenAI - requesting both analysis and proficiency prediction
-        const response = await callOpenAI("analyzePerformance", { 
-          answers: userAnswers,
-          includeProficiency: true // Signal OpenAI to calculate proficiency
-        });
+        console.log(`Analyzing results with total quiz time: ${totalQuizTime} seconds`);
         
-        if (response.success && response.data) {
-          const resultData = response.data;
+        let resultData;
+        
+        if (useAssistantApi) {
+          // Use the new Assistants API integration
+          try {
+            console.log("Using OpenAI Assistants API for analysis");
+            resultData = await analyzeQuizWithAssistant(userAnswers, totalQuizTime);
+          } catch (error) {
+            console.error("Assistants API failed, falling back to direct OpenAI call:", error);
+            setUseAssistantApi(false);
+            
+            // Fall back to the original method
+            const response = await callOpenAI("analyzePerformance", { 
+              answers: userAnswers,
+              includeProficiency: true,
+              totalQuizTime
+            });
+            
+            if (response.success && response.data) {
+              resultData = response.data;
+            } else {
+              throw new Error("Failed to get valid analysis response");
+            }
+          }
+        } else {
+          // Use the original direct OpenAI API call
+          console.log("Using direct OpenAI API call for analysis");
+          const response = await callOpenAI("analyzePerformance", { 
+            answers: userAnswers,
+            includeProficiency: true,
+            totalQuizTime
+          });
+          
+          if (response.success && response.data) {
+            resultData = response.data;
+          } else {
+            throw new Error("Failed to get valid analysis response");
+          }
+        }
+        
+        if (resultData) {
           setResult(resultData);
           setQuizResult(resultData); // Save to global state
-        } else {
-          console.error("Failed to get valid analysis response", response);
         }
       } catch (error) {
         console.error("Failed to analyze results:", error);
@@ -61,7 +97,7 @@ export const QuizResults = () => {
       console.warn("No user answers to analyze:", userAnswers);
       setLoading(false);
     }
-  }, [userAnswers, setQuizResult]);
+  }, [userAnswers, setQuizResult, totalQuizTime, useAssistantApi]);
 
   const handleStartNew = () => {
     resetQuiz();
@@ -83,8 +119,26 @@ export const QuizResults = () => {
           <CardTitle className="text-center">Analyzing Results...</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col items-center justify-center py-8">
-          <BarChart3 className="h-16 w-16 text-primary/60 animate-pulse" />
-          <p className="mt-4 text-gray-500">Please wait while we analyze your performance.</p>
+          {useAssistantApi ? (
+            <>
+              <div className="flex items-center justify-center mb-2">
+                <Bot className="h-16 w-16 text-primary/60 animate-pulse" />
+                <div className="ml-2 h-2 w-2 bg-blue-500 rounded-full animate-ping"></div>
+                <div className="ml-1 h-1.5 w-1.5 bg-blue-400 rounded-full animate-ping animation-delay-150"></div>
+                <div className="ml-1 h-1 w-1 bg-blue-300 rounded-full animate-ping animation-delay-300"></div>
+              </div>
+              <p className="mt-4 text-gray-500 text-center">
+                Please wait while the AI Assistant analyzes your performance.
+                <br/>
+                <span className="text-xs text-blue-500">Using OpenAI Assistants API with function calling</span>
+              </p>
+            </>
+          ) : (
+            <>
+              <BarChart3 className="h-16 w-16 text-primary/60 animate-pulse" />
+              <p className="mt-4 text-gray-500">Please wait while we analyze your performance.</p>
+            </>
+          )}
         </CardContent>
       </Card>
     );
@@ -113,6 +167,33 @@ export const QuizResults = () => {
     <Card className="w-full max-w-3xl mx-auto mt-8 bg-white/80 backdrop-blur-sm">
       <CardHeader>
         <CardTitle className="text-center text-2xl">Quiz Results</CardTitle>
+        <div className="flex justify-end">
+          <div className="flex items-center space-x-2">
+            <div className="text-xs text-gray-500">Analysis:</div>
+            <button
+              className={`px-2 py-1 text-xs rounded-l-md ${!useAssistantApi ? 'bg-primary text-white' : 'bg-gray-200 text-gray-700'}`}
+              onClick={() => {
+                if (useAssistantApi) {
+                  setUseAssistantApi(false);
+                  setLoading(true);
+                }
+              }}
+            >
+              Standard
+            </button>
+            <button
+              className={`px-2 py-1 text-xs rounded-r-md ${useAssistantApi ? 'bg-primary text-white' : 'bg-gray-200 text-gray-700'}`}
+              onClick={() => {
+                if (!useAssistantApi) {
+                  setUseAssistantApi(true);
+                  setLoading(true);
+                }
+              }}
+            >
+              Assistant API
+            </button>
+          </div>
+        </div>
       </CardHeader>
       
       <CardContent className="space-y-8">
@@ -156,6 +237,12 @@ export const QuizResults = () => {
                   <span className="text-sm font-medium flex items-center">
                     <Brain className="h-4 w-4 mr-1" /> 
                     Proficiency Level
+                    {useAssistantApi && (
+                      <span className="ml-2 px-1.5 py-0.5 bg-blue-100 rounded-sm text-[10px] text-blue-700 flex items-center">
+                        <Bot className="h-3 w-3 mr-0.5" />
+                        Assistant
+                      </span>
+                    )}
                   </span>
                   <span className="text-sm font-medium">
                     {getProficiencyLevel(result.proficiency)}
@@ -166,7 +253,7 @@ export const QuizResults = () => {
                   className="h-2 bg-blue-100"
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Based on ML analysis of your quiz performance
+                  Based on {useAssistantApi ? 'OpenAI Assistant' : 'ML'} analysis of your quiz performance
                 </p>
               </div>
             )}

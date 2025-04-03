@@ -60,7 +60,9 @@ export async function uploadFileAndCreateVectorStore(
       expires_after: {
         anchor: "last_active_at",
         days: 7, // Default expiration policy
-      },
+      }
+      // Note: OpenAI may adjust chunking strategy automatically
+      // If custom chunking is needed, update based on the latest API documentation
     });
 
     console.log("Vector store created:", vectorStoreResponse);

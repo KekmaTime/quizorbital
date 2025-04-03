@@ -24,9 +24,24 @@ export async function getOrCreateQuizAssistant() {
         "1. Generate quiz questions based on study materials " +
         "2. Evaluate user answers, especially for descriptive questions " +
         "3. Analyze user performance and provide personalized feedback " +
-        "Use the provided study materials to create relevant and accurate questions.",
+        "IMPORTANT INSTRUCTION: Focus EXCLUSIVELY on the subject matter content from uploaded materials. " +
+        "You must COMPLETELY IGNORE all file metadata, PDF technical specifications, formatting information, " +
+        "encoding details, font information, or any other technical aspects of the document structure. " +
+        "Questions should ONLY be about the educational content and subject matter within the documents. " +
+        "NEVER generate questions about PDF versions, encoding methods, file formats, or document structure. " +
+        "If you cannot find relevant educational content in the materials, state this clearly rather than " +
+        "defaulting to questions about the document format itself.",
       model: "gpt-4o",
-      tools: [{ type: "file_search" }],
+      tools: [{ 
+        type: "file_search",
+        file_search: {
+          ranking_options: {
+            ranker: "auto",
+            score_threshold: 0.8 // Increased threshold to filter out more metadata noise
+          },
+          max_num_results: 15 // Limit the number of chunks for better focus
+        }
+      }],
     });
 
     quizAssistantId = assistant.id;
@@ -56,7 +71,7 @@ export async function createQuizThread(vectorStoreId?: string) {
       messages: [
         {
           role: "user",
-          content: "I'm starting a new quiz session. Please help me generate relevant questions based on my study materials."
+          content: "I'm starting a new quiz session. Please help me generate relevant questions based ONLY on the educational subject matter in my study materials. Do not create questions about technical aspects of the documents themselves."
         }
       ]
     };
@@ -65,7 +80,12 @@ export async function createQuizThread(vectorStoreId?: string) {
     if (vectorStoreId) {
       options.tool_resources = {
         file_search: { 
-          vector_store_ids: [vectorStoreId]
+          vector_store_ids: [vectorStoreId],
+          ranking_options: {
+            ranker: "auto",
+            score_threshold: 0.8 // Higher threshold to filter out metadata noise
+          },
+          max_num_results: 15 // Limit the number of chunks
         }
       };
     }
@@ -103,12 +123,28 @@ export async function generateQuizQuestions(
       content: `Generate ${numQuestions} quiz questions from my study materials. 
         Difficulty level: ${difficulty}/5.
         Question types: ${questionTypes.join(", ")}.
-        Format the response as a JSON array of question objects.`
+        Format the response as a JSON array of question objects.
+        
+        IMPORTANT: Focus EXCLUSIVELY on the educational subject matter of the documents.
+        Do NOT create questions about PDF formats, file encodings, document properties, 
+        or any technical aspects of the documents themselves.
+        If you cannot find sufficient educational content, tell me instead of generating
+        questions about document formats or specifications.`
     });
 
     // Run the assistant
     const run = await openai.beta.threads.runs.create(threadId, {
       assistant_id: assistantId,
+      tools: [{
+        type: "file_search",
+        file_search: {
+          ranking_options: {
+            ranker: "auto",
+            score_threshold: 0.8 // Higher threshold to filter out metadata noise
+          },
+          max_num_results: 15 // Limit the number of chunks
+        }
+      }]
     });
 
     // Return run ID for polling
@@ -178,6 +214,16 @@ export async function evaluateAnswer(
     // Run the assistant
     const run = await openai.beta.threads.runs.create(threadId, {
       assistant_id: assistantId,
+      tools: [{
+        type: "file_search",
+        file_search: {
+          ranking_options: {
+            ranker: "auto",
+            score_threshold: 0.8 // Consistent threshold
+          },
+          max_num_results: 15 // Limit the number of chunks
+        }
+      }]
     });
 
     // Return run ID for polling
@@ -211,6 +257,16 @@ export async function analyzePerformance(
     // Run the assistant
     const run = await openai.beta.threads.runs.create(threadId, {
       assistant_id: assistantId,
+      tools: [{
+        type: "file_search",
+        file_search: {
+          ranking_options: {
+            ranker: "auto",
+            score_threshold: 0.8 // Consistent threshold
+          },
+          max_num_results: 15 // Limit the number of chunks
+        }
+      }]
     });
 
     // Return run ID for polling

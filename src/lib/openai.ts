@@ -224,14 +224,22 @@ function evaluateMockAnswer({ question, userAnswer }: any) {
   }
 }
 
-function analyzeMockPerformance({ answers }: { answers: any[] }) {
+function analyzeMockPerformance({ answers, totalQuizTime = null }: { answers: any[], totalQuizTime?: number | null }) {
   // Basic metrics calculation
   const totalQuestions = answers.length || 5;
   const correctAnswers = answers.filter(a => a.isCorrect).length || 3;
   const accuracy = (correctAnswers / totalQuestions) * 100;
-  const avgResponseTime = answers.length 
-    ? Math.round(answers.reduce((sum, a) => sum + a.timeSpent, 0) / answers.length)
-    : 10000; // Default 10 seconds in ms
+  
+  // Use total quiz time if provided, otherwise use sum of individual times
+  let avgResponseTime;
+  if (totalQuizTime) {
+    // Convert to milliseconds for consistency
+    avgResponseTime = Math.round(totalQuizTime * 1000 / totalQuestions);
+  } else {
+    avgResponseTime = answers.length 
+      ? Math.round(answers.reduce((sum, a) => sum + a.timeSpent, 0) / answers.length)
+      : 10000; // Default 10 seconds in ms
+  }
   
   // Calculate a mock proficiency score between 0.2 and 0.8
   const proficiency = Math.min(0.8, Math.max(0.2, correctAnswers / totalQuestions));
@@ -241,7 +249,9 @@ function analyzeMockPerformance({ answers }: { answers: any[] }) {
       totalQuestions,
       correctAnswers,
       accuracy: accuracy.toFixed(2),
-      averageResponseTime: `${(avgResponseTime / 1000).toFixed(1)} seconds`,
+      averageResponseTime: totalQuizTime 
+        ? `${(totalQuizTime / totalQuestions).toFixed(1)} seconds per question (${totalQuizTime} seconds total)` 
+        : `${(avgResponseTime / 1000).toFixed(1)} seconds`,
     },
     analysis: {
       strengths: ["Understanding of key concepts", "Application of principles"],
@@ -389,6 +399,14 @@ async function generateQuestions({
       1. Difficulty level: ${difficulty}
       2. Question distribution: ${questionTypes.map((type, index) => `Question ${index+1}: ${type}`).join(', ')}
       
+      CRITICALLY IMPORTANT INSTRUCTION:
+      - Focus EXCLUSIVELY on the educational and subject matter content in the materials.
+      - NEVER create questions about PDF formats, file metadata, encoding methods, fonts, 
+        document structure, or any technical aspects of the document format.
+      - If you cannot find sufficient relevant educational content, state this clearly
+        rather than defaulting to questions about document technical specifications.
+      - Questions must test understanding of the actual educational content only.
+      
       For each question, provide:
       - A clear, complete question statement without abbreviations or ellipses
       - Make sure questions are fully written out and not cut off with "..."
@@ -428,7 +446,7 @@ async function generateQuestions({
         messages: [
           {
             role: "system",
-            content: "You are an educational AI expert at creating quiz questions. You always respond with valid JSON with a 'questions' array."
+            content: "You are an educational AI expert at creating quiz questions. You always respond with valid JSON with a 'questions' array. Focus exclusively on the educational content in materials and never create questions about document formats or technical specifications."
           },
           {
             role: "user",
@@ -664,10 +682,12 @@ async function evaluateAnswer({
 // Function to analyze user performance
 async function analyzePerformance({ 
   answers,
-  includeProficiency = false
+  includeProficiency = false,
+  totalQuizTime = null
 }: { 
   answers: any[];
   includeProficiency?: boolean;
+  totalQuizTime?: number | null;
 }): Promise<OpenAIResponse> {
   try {
     // Check if answers is undefined or empty
@@ -675,7 +695,7 @@ async function analyzePerformance({
       console.warn("No answers to analyze");
       return {
         success: true,
-        data: analyzeMockPerformance({ answers: [] })
+        data: analyzeMockPerformance({ answers: [], totalQuizTime })
       };
     }
     
@@ -685,8 +705,17 @@ async function analyzePerformance({
     const accuracy = (correctAnswers / totalQuestions) * 100;
     
     // Calculate average response time
-    const totalResponseTime = answers.reduce((total, answer) => total + answer.timeSpent, 0);
-    const averageResponseTime = Math.round(totalResponseTime / totalQuestions);
+    // If totalQuizTime is provided, use it for a more accurate average
+    let averageResponseTime; 
+    if (totalQuizTime) {
+      // Use the total quiz time divided by number of questions
+      averageResponseTime = Math.round(totalQuizTime * 1000 / totalQuestions);
+      console.log(`Using total quiz time: ${totalQuizTime}s for average calculation`);
+    } else {
+      // Fall back to sum of individual answer times
+      const totalResponseTime = answers.reduce((total, answer) => total + answer.timeSpent, 0);
+      averageResponseTime = Math.round(totalResponseTime * 1000 / totalQuestions);
+    }
     
     // Prepare answer data for OpenAI
     const answerData = answers.map((answer, index) => {
@@ -708,7 +737,7 @@ async function analyzePerformance({
       Total Questions: ${totalQuestions}
       Correct Answers: ${correctAnswers}
       Accuracy: ${accuracy.toFixed(2)}%
-      Average Response Time: ${averageResponseTime} ms
+      Average Response Time: ${totalQuizTime ? `${totalQuizTime / totalQuestions} seconds per question (${totalQuizTime} seconds total)` : `${averageResponseTime / 1000} seconds`}
       
       Detailed Answers:
       ${JSON.stringify(answerData, null, 2)}
@@ -774,7 +803,9 @@ async function analyzePerformance({
           totalQuestions,
           correctAnswers,
           accuracy: accuracy.toFixed(2),
-          averageResponseTime: `${(averageResponseTime / 1000).toFixed(1)} seconds`,
+          averageResponseTime: totalQuizTime 
+            ? `${(totalQuizTime / totalQuestions).toFixed(1)} seconds per question (${totalQuizTime} seconds total)` 
+            : `${(averageResponseTime / 1000).toFixed(1)} seconds`,
         },
         analysis: {
           strengths: parsedResponse.strengths || ["General subject knowledge"],
@@ -800,7 +831,7 @@ async function analyzePerformance({
       // Fallback to mock analysis
       return {
         success: true,
-        data: analyzeMockPerformance({ answers })
+        data: analyzeMockPerformance({ answers, totalQuizTime })
       };
     }
   } catch (error) {
@@ -809,7 +840,7 @@ async function analyzePerformance({
     // Fallback to mock analysis
     return {
       success: true,
-      data: analyzeMockPerformance({ answers })
+      data: analyzeMockPerformance({ answers, totalQuizTime })
     };
   }
 } 

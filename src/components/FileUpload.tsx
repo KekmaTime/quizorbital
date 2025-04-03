@@ -4,10 +4,11 @@ import { useQuiz } from "@/lib/QuizContext";
 import { Button } from "@/components/ui/button";
 import { Upload, Newspaper, FileUp } from "lucide-react";
 import { uploadFileAndCreateVectorStore, isVectorStoreReady } from "@/lib/vectorStore";
+import { extractTextFromPDF } from "@/lib/pdfExtractor";
 
 export default function FileUpload() {
   const { toast } = useToast();
-  const { setStudyMaterial, setVectorStoreId, vectorStoreId } = useQuiz();
+  const { setStudyMaterial, setVectorStoreId, state } = useQuiz();
   const [isLoading, setIsLoading] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
 
@@ -15,16 +16,47 @@ export default function FileUpload() {
     async (file: File) => {
       setIsLoading(true);
       try {
+        let fileToUpload = file;
+        let extractedText = "";
+        
+        // Check if the file is a PDF, and if so, convert it to text
+        if (file.type === "application/pdf") {
+          toast({
+            title: "Processing PDF",
+            description: "Converting PDF to text before uploading...",
+          });
+          
+          // Extract text from PDF using GPT-4o's vision capabilities
+          extractedText = await extractTextFromPDF(file);
+          
+          // Verify we have meaningful content
+          if (extractedText.length < 100 || extractedText.includes("Error extracting PDF content")) {
+            throw new Error("Could not extract meaningful content from the PDF");
+          }
+          
+          // Create a new File object with the extracted text
+          const textFileName = file.name.replace(".pdf", ".txt");
+          fileToUpload = new File([extractedText], textFileName, { type: "text/plain" });
+          
+          console.log("Successfully converted PDF to text, length:", extractedText.length);
+        }
+        
         // Upload the file and create a vector store
-        const result = await uploadFileAndCreateVectorStore(file);
+        const result = await uploadFileAndCreateVectorStore(fileToUpload);
         
         if (result.success && result.vectorStoreId) {
           // Set the vector store ID in the quiz context
           setVectorStoreId(result.vectorStoreId);
           
           // Also set the study material for fallback
-          const text = await file.text();
-          setStudyMaterial(text);
+          if (extractedText) {
+            // If we already extracted text from PDF, use that
+            setStudyMaterial(extractedText);
+          } else {
+            // Otherwise, read the file content
+            const text = await file.text();
+            setStudyMaterial(text);
+          }
           
           setFileName(file.name);
           
@@ -154,7 +186,7 @@ export default function FileUpload() {
       
       {isLoading && <p className="text-sm text-muted-foreground">Processing your document...</p>}
       
-      {vectorStoreId && (
+      {state.vectorStoreId && (
         <p className="text-sm text-green-600">Document processed and ready for quizzing!</p>
       )}
     </div>

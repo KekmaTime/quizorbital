@@ -16,7 +16,7 @@ export const Quiz = () => {
   // Debug logging
   console.log("Quiz component rendering");
   
-  const { state, submitAnswer, setPhase } = useQuiz();
+  const { state, submitAnswer, setPhase, setTotalQuizTime } = useQuiz();
   const { questions, currentQuestionIndex, userAnswers } = state;
   
   console.log("Quiz state:", {
@@ -65,30 +65,48 @@ export const Quiz = () => {
   const isLastQuestion = currentQuestionIndex === (questions.length - 1 || questionsRef.current.length - 1);
   const isQuizCompleted = currentQuestionIndex >= (questions.length || questionsRef.current.length);
 
-  // Timer for the whole quiz
+  // Track total quiz time for all quizzes (even with no time limit)
   useEffect(() => {
-    if (!quizStartTime || isQuizCompleted || state.settings.timeLimit === 0) return;
-
-    console.log("Setting up quiz timer with time limit:", state.settings.timeLimit);
+    if (!quizStartTime || isQuizCompleted) return;
     
-    const timer = setInterval(() => {
+    const timeTracker = setInterval(() => {
+      // Calculate elapsed time
       const elapsedSeconds = Math.floor(
         (new Date().getTime() - quizStartTime.getTime()) / 1000
       );
-      const remaining = state.settings.timeLimit * 60 - elapsedSeconds;
       
-      if (remaining <= 0) {
-        clearInterval(timer);
-        setTimeLeft(0);
-        // End quiz by transitioning to results phase
-        setPhase(QuizPhase.Results);
-      } else {
-        setTimeLeft(remaining);
+      // If the quiz has a time limit, also update timeLeft
+      if (state.settings.timeLimit > 0) {
+        const remaining = state.settings.timeLimit * 60 - elapsedSeconds;
+        
+        if (remaining <= 0) {
+          clearInterval(timeTracker);
+          setTimeLeft(0);
+          
+          // Save total time spent before ending quiz
+          setTotalQuizTime(state.settings.timeLimit * 60);
+          
+          // End quiz by transitioning to results phase
+          setPhase(QuizPhase.Results);
+        } else {
+          setTimeLeft(remaining);
+        }
       }
     }, 1000);
 
-    return () => clearInterval(timer);
-  }, [quizStartTime, state.settings.timeLimit, setPhase, isQuizCompleted]);
+    return () => clearInterval(timeTracker);
+  }, [quizStartTime, state.settings.timeLimit, setPhase, isQuizCompleted, setTotalQuizTime]);
+
+  // Store quiz time when quiz is completed
+  useEffect(() => {
+    if (isQuizCompleted && quizStartTime) {
+      const totalTimeInSeconds = Math.floor(
+        (new Date().getTime() - quizStartTime.getTime()) / 1000
+      );
+      console.log("Quiz completed, total time:", totalTimeInSeconds, "seconds");
+      setTotalQuizTime(totalTimeInSeconds);
+    }
+  }, [isQuizCompleted, quizStartTime, setTotalQuizTime]);
 
   // Reset question start time when the question changes
   useEffect(() => {
@@ -196,6 +214,16 @@ export const Quiz = () => {
       // End quiz if it was the last question
       if (isLastQuestion) {
         console.log("Last question completed, transitioning to results");
+        
+        // Calculate and store total quiz time
+        if (quizStartTime) {
+          const totalTimeInSeconds = Math.floor(
+            (new Date().getTime() - quizStartTime.getTime()) / 1000
+          );
+          console.log("Quiz completed, total time:", totalTimeInSeconds, "seconds");
+          setTotalQuizTime(totalTimeInSeconds);
+        }
+        
         setPhase(QuizPhase.Results);
       }
     }, 3000);

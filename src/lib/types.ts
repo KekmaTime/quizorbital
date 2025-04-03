@@ -78,6 +78,7 @@ export interface QuizState {
   preAssessmentResults: PreAssessmentResults | null;
   vectorStoreId: string | null;
   quizResult: QuizResult | null;
+  totalQuizTime: number; // Total time in seconds the user spent on the quiz
 }
 
 // Pre-assessment Types

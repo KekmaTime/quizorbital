@@ -20,6 +20,7 @@ const initialState: QuizState = {
   preAssessmentResults: null,
   vectorStoreId: null,
   quizResult: null,
+  totalQuizTime: 0,
 };
 
 // Action types
@@ -35,7 +36,8 @@ type Action =
   | { type: "SET_PREASSESSMENT_RESULTS"; payload: PreAssessmentResults }
   | { type: "RESET_QUIZ" }
   | { type: "SET_VECTOR_STORE_ID"; payload: string | null }
-  | { type: "SET_QUIZ_RESULT"; payload: QuizResult };
+  | { type: "SET_QUIZ_RESULT"; payload: QuizResult }
+  | { type: "SET_TOTAL_QUIZ_TIME"; payload: number };
 
 // Quiz context type
 export interface QuizContextType {
@@ -51,6 +53,7 @@ export interface QuizContextType {
   resetQuiz: () => void;
   setVectorStoreId: (id: string | null) => void;
   setQuizResult: (result: QuizResult) => void;
+  setTotalQuizTime: (timeInSeconds: number) => void;
 }
 
 // Reducer function
@@ -93,6 +96,8 @@ function quizReducer(state: QuizState, action: Action): QuizState {
       return { ...state, vectorStoreId: action.payload };
     case "SET_QUIZ_RESULT":
       return { ...state, quizResult: action.payload };
+    case "SET_TOTAL_QUIZ_TIME":
+      return { ...state, totalQuizTime: action.payload };
     case "RESET_QUIZ":
       return {
         ...initialState,
@@ -159,7 +164,20 @@ export function QuizProvider({ children }: { children: ReactNode }) {
           content = state.studyMaterial;
         } else if (state.studyMaterial instanceof File) {
           if (state.studyMaterial.type === "application/pdf") {
+            toast({
+              title: "Processing PDF",
+              description: "Extracting content using GPT-4o vision. This may take a moment...",
+              variant: "default",
+            });
+            
             content = await extractTextFromPDF(state.studyMaterial);
+            
+            // Verify we have meaningful content
+            if (content.length < 100 || content.includes("Error extracting PDF content")) {
+              throw new Error("Could not extract meaningful content from the PDF");
+            }
+            
+            console.log("Successfully extracted PDF content, length:", content.length);
           } else {
             content = await state.studyMaterial.text();
           }
@@ -168,7 +186,7 @@ export function QuizProvider({ children }: { children: ReactNode }) {
         console.error("Error extracting content:", error);
         toast({
           title: "Content Extraction Error",
-          description: "There was a problem reading your study material. Please try another file.",
+          description: error.message || "There was a problem reading your study material. Please try another file.",
           variant: "destructive",
         });
         dispatch({ type: "SET_LOADING", payload: false });
@@ -282,6 +300,11 @@ export function QuizProvider({ children }: { children: ReactNode }) {
     dispatch({ type: "SET_VECTOR_STORE_ID", payload: id });
   }, []);
 
+  const setTotalQuizTime = useCallback((timeInSeconds: number) => {
+    console.log("Setting total quiz time:", timeInSeconds);
+    dispatch({ type: "SET_TOTAL_QUIZ_TIME", payload: timeInSeconds });
+  }, []);
+
   const value = useMemo(
     () => ({
       state,
@@ -296,6 +319,7 @@ export function QuizProvider({ children }: { children: ReactNode }) {
       resetQuiz,
       setVectorStoreId,
       setQuizResult,
+      setTotalQuizTime,
     }),
     [
       state,
@@ -310,6 +334,7 @@ export function QuizProvider({ children }: { children: ReactNode }) {
       resetQuiz,
       setVectorStoreId,
       setQuizResult,
+      setTotalQuizTime,
     ]
   );
 
